@@ -5,7 +5,16 @@ const morgan = require("morgan");
 // create express app
 const app = express();
 
-app.use(morgan('tiny'));
+app.use(morgan("tiny"));
+
+const validateData = (req) => {
+  const { id, tags, date, name, author, isPublished, price } = req.body || {};
+  if ([id, tags, date, name, author, isPublished, price].includes(undefined)) {
+    return false;
+  }
+
+  return true;
+};
 
 // define a simple route
 app.get("/", (req, res) => {
@@ -17,6 +26,10 @@ app.get("/data", (req, res) => {
 
 // POST route
 app.post("/", (req, res) => {
+  if (!validateData(req)) {
+    return res.status(400).json({ error: "Please input all value" });
+  }
+
   const data = JSON.parse(fs.readFileSync("./data.json", "utf8")).data;
   data.push(req.body);
   fs.writeFileSync("./data.json", JSON.stringify(data));
